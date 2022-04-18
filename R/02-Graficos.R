@@ -1,4 +1,4 @@
-
+diarias_modificada <- readr::read_rds("data/diarias_modificada")
 
 # Primeiro gráfico --------------------------------------------------------
 
@@ -114,16 +114,35 @@ diarias_modificada |>
 
 
 diarias_modificada |>
-  dplyr::group_by(Governador)|>
-  dplyr::summarise(
-    Total_Valor = sum(Valor, na.rm = TRUE),
-    Media_Valor = mean(Valor, na.rm = TRUE),
-    Mediana_Valor = median(Valor, na.rm = TRUE),
-    Max_Valor = max(Valor),
-    Min_Valor = min(Valor)
+  dplyr::mutate(
+    Valor_format = paste("R$", format(Valor, big.mark = ".", decimal.mark = ","))
+  ) |>
+  ggplot2::ggplot() +
+  ggplot2::aes(x = Diarias, y = Valor) +
+  ggplot2::geom_point() +
+  gghighlight::gghighlight(
+    Valor > 35000 & Diarias < 100,
+    label_key = Valor_format
+  ) +
+  ggplot2::labs(
+    title = "Há alguma incoerência nos valores pagos?",
+    subtitle = "Alguns valores recebidos são extremamente altos quando se compara com a quantidade \nde diárias feitas para gerar esse valor. Podemos ver que alguns dos valores mais altos \nforam feitos a partir de menos de 100 diárias.",
+    x = "Diárias",
+    y = "Total Recebido (R$)"
+  ) +
+  ggplot2::theme_minimal() +
+  ggplot2::theme(
+    legend.position = "none",
+    legend.title = ggplot2::element_blank(),
+    axis.title.x = ggplot2::element_text(vjust = -1),
+    axis.title.y = ggplot2::element_text(vjust = 1.5)
+  ) +
+  ggplot2::scale_y_continuous(
+    limits = c(0, 120000),
+    breaks = seq(0, 120000, 30000),
+    labels = c("0", "30 mil", "60 mil", "90 mil", "120 mil")
   )
 
-diarias_modificada |>
-  dplyr::group_by(Governador) |>
-  dplyr::arrange(desc(Valor))
+
+
 
