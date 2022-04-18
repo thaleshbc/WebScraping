@@ -1,7 +1,11 @@
 
 
+# Releitura dos dados -----------------------------------------------------
+
 diarias_modificada <- readr::read_rds("data/diarias")
 
+
+# Alteração dos dados -----------------------------------------------------
 
 diarias_modificada <- diarias_modificada |>
   dplyr::mutate(
@@ -25,16 +29,24 @@ diarias_modificada <- diarias_modificada |>
       Ano %in% c(2011:2014) ~ "Rosalba Ciarlini",
       Ano %in% c(2015:2018) ~ "Robinson Faria",
       Ano %in% c(2019:2022) ~ "Fátima Bezerra"
-    )
+    ),
+    Valor_por_Diaria = Valor / Diarias
   )
 
+
+# Salvamento dos dados ----------------------------------------------------
 
 diarias_modificada |>
   readr::write_rds("data/diarias_modificada")
 
 
+# Releitura dos dados modificados -----------------------------------------
+
 diarias_modificada <- readr::read_rds("data/diarias_modificada")
 
+
+
+# Exploração dos dados ----------------------------------------------------
 
 diarias_modificada |>
   dplyr::group_by(Orgao) |>

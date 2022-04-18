@@ -1,6 +1,8 @@
 
 
 
+# Conversão para lista ----------------------------------------------------
+
 abjutils::chrome_to_body(
   "__RequestVerificationToken: AlJVY4p4ujrcH-pMuCAtC6qSTUurFj0hn_pPd0SDzBWFRxkE0TVr-8_fFhJArQ_WGYAQCrMfiyecAEV0DfnWKKuzSbc-uJ28vsHjgeDeyZE1
   Escolha: 2
@@ -12,7 +14,12 @@ abjutils::chrome_to_body(
   TipoViagem: TD"
 )
 
+
+# Função para o Scraping --------------------------------------------------
+
 diarias_desejadas <- function(ano) {
+
+  # imitação para pesquisa das viagens feitas dentro do estado do RN (internas)
 
   body_rn <- list(
     "__RequestVerificationToken" = "AlJVY4p4ujrcH-pMuCAtC6qSTUurFj0hn_pPd0SDzBWFRxkE0TVr-8_fFhJArQ_WGYAQCrMfiyecAEV0DfnWKKuzSbc-uJ28vsHjgeDeyZE1",
@@ -23,6 +30,8 @@ diarias_desejadas <- function(ano) {
     "IdOrgao" = "0",
     "Classificacao" = "b",
     "TipoViagem" = "RN")
+
+  # imitação para pesquisa das viagens feitas para fora estado do RN (externas)
 
   body_ou <- list(
     "__RequestVerificationToken" = "AlJVY4p4ujrcH-pMuCAtC6qSTUurFj0hn_pPd0SDzBWFRxkE0TVr-8_fFhJArQ_WGYAQCrMfiyecAEV0DfnWKKuzSbc-uJ28vsHjgeDeyZE1",
@@ -36,17 +45,25 @@ diarias_desejadas <- function(ano) {
 
   u_diarias <- "http://servicos.searh.rn.gov.br/searh/Diaria/Diaria"
 
+  # Requisição dos dados das viagens internas e externas
+
   r_diarias_rn <- httr::POST(u_diarias, body = body_rn)
 
   r_diarias_ou <- httr::POST(u_diarias, body = body_ou)
 
+  # Fluxo condicional para evitar erros na aquisição dos dados
+
   if(r_diarias_rn$status_code == 200) {
+
+    # Aquisição dos dados
 
     tabela_diarias_bruta_rn <- r_diarias_rn |>
       xml2::read_html() |>
       xml2::xml_find_all("//table//tr//td") |>
       xml2::xml_text() |>
       stringr::str_squish()
+
+    # Primeiras modificações nos dados
 
     tabela_diarias_modificada_rn <- tabela_diarias_bruta_rn |>
       c() |>
@@ -108,9 +125,13 @@ diarias_desejadas <- function(ano) {
 
   }
 
+  # Junção dos dois data frames
+
   dplyr::bind_rows(tabela_diarias_modificada_rn, tabela_diarias_modificada_ou)
 
 }
+
+# Execução da função criada através de iteração
 
 anos <- c(2004:2022)
 

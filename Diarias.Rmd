@@ -225,7 +225,8 @@ diarias_modificada <- diarias_modificada |>
       Ano %in% c(2011:2014) ~ "Rosalba Ciarlini",
       Ano %in% c(2015:2018) ~ "Robinson Faria",
       Ano %in% c(2019:2022) ~ "Fátima Bezerra"
-    )
+    ),
+    Valor_por_Diaria = Valor / Diarias
   )
 
 diarias_modificada |>
@@ -242,7 +243,7 @@ diarias_modificada |>
 
 Com todas as alterações feitas, podemos verificar e analisar os dados a partir de visualizações. Primeiro vamos ver qual observação teve mais diárias acumuladas em um ano.
 
-```{r echo=FALSE, fig.align='center', message=FALSE, warning=FALSE}
+```{r echo=FALSE, fig.align='center', fig.height=6, fig.width=10, message=FALSE, warning=FALSE}
 
 arrows <- tibble::tibble(
   x1 = c(3.95),
@@ -266,8 +267,8 @@ diarias_modificada |>
   ) +
   ggplot2::theme_bw() +
   ggplot2::labs(
-    title = "Como se comportaram as diárias durante os diferentes mandatos \nde governador?",
-    subtitle = "Cada ponto mostra a quantidade de diárias recebidas por um servidor do Estado \nem viagens para dentro ou fora dos limites estaduais em um ano desde 2004 \ndurante mandatos de governadores diferentes.",
+    title = "Como se comportaram as diárias durante os diferentes mandatos de governador?",
+    subtitle = "Cada ponto mostra a quantidade de diárias recebidas por um servidor do Estado em viagens para dentro ou fora dos limites estaduais \nem um ano desde 2004 durante mandatos de governadores diferentes.",
     x = "Governador",
     y = "Número de Diárias"
   ) +
@@ -280,8 +281,8 @@ diarias_modificada |>
   ggplot2::theme(
     legend.position = "top",
     legend.title = ggplot2::element_blank(),
-    axis.title.x = ggplot2::element_text(vjust = -1),
-    axis.title.y = ggplot2::element_text(vjust = 1.5),
+    axis.title.x = ggplot2::element_text(vjust = -1.5),
+    axis.title.y = ggplot2::element_text(vjust = 2),
   ) +   
   ggplot2::annotate(
     "text", x = 3.75, y = 390, family = "Poppins", size = 2.8, color = "gray20",
@@ -302,7 +303,7 @@ diarias_modificada |>
 
 Com o gráfico mostrado acima, conseguimos observar várias coisas. Uma delas, que foi destacada, é a que um servidor recebeu 306,5 diárias no ano de 2009, totalizando R$ 24.400,00 de recebidos. Também se pode observar que o mandato da governadora Wilma de Faria foi quando se teve mais diárias aprovadas, entretanto é importante lembrar que ela exerceu mandato do ano de 2003 a 2010, a única que se reelegeu durante o período em que os dados são disponibilizados. que no caso é desde o ano de 2004. Uma outra coisa que é bastante perceptível é que no mandato da governadora Rosalba Ciarlini houveram pouquíssimas viagens para fora do estado, viagens essas que são mostradas da cor amarela no gráfico.
 
-```{r echo=FALSE, fig.align='center', message=TRUE, warning=FALSE}
+```{r echo=FALSE, fig.align='center', message=FALSE, warning=FALSE, fig.height=6, fig.width=10,}
 
 diarias_modificada |>
   dplyr::group_by(
@@ -329,8 +330,8 @@ diarias_modificada |>
     unhighlighted_params = list(size = 0.3, colour = "grey")
   ) +
   ggplot2::labs(
-    title = "Gastos das insituições com diárias ao longo dos anos",
-    subtitle = "Cada linha representa os gastos das instituições do governo estadual. \nEstão destacadas as que em algum ano tiveram gastos maiores a 1,5 milhões \nde reais.",
+    title = "Gastos das insituições com diárias ao longo dos anos.",
+    subtitle = "Cada linha representa os gastos das instituições do governo estadual. Estão destacadas as que em algum ano tiveram gastos \nmaiores a 1,5 milhões de reais com diárias para os servidores em viagem.",
     x = "Ano",
     y = "Total Gasto (milhões R$)"
   ) +
@@ -339,13 +340,13 @@ diarias_modificada |>
   ggplot2::theme(
     legend.position = "top",
     legend.title = ggplot2::element_blank(),
-    axis.title.x = ggplot2::element_text(vjust = -1),
-    axis.title.y = ggplot2::element_text(vjust = 1.5)
+    axis.title.x = ggplot2::element_text(vjust = -1.5),
+    axis.title.y = ggplot2::element_text(vjust = 2)
   ) + 
   ggplot2::scale_y_continuous(
     limits = c(0, 4000000),
-    breaks = seq(0, 4000000, 2000000),
-    labels = c("0", "2", "4")
+    breaks = seq(0, 4000000, 1000000),
+    labels = c("0", "1", "2", "3", "4")
   ) +
   ggplot2::scale_x_continuous(
     breaks = seq(2004, 2022, 3)
@@ -354,6 +355,42 @@ diarias_modificada |>
 ```
 
 Nesse segundo gráfico conseguimos ver o quanto as instituições governamentais gastaram por ano em diárias. As instituições destacadas são as que tiveram gasto de pelo menos 1,5 milhões de reais em algum ano desde que os dados começaram a ser disponibilizados. Consegue-se observar uma tendência de queda nos valores acumulados de diárias recebidas pelos servisores do estado ao longo dos anos. Possivelmente, com o advento do portal da transparência entre outras ferramentas que facilitaram o acesso a informação, tornou os procedimentos para o recebimento de diárias mais burocráticos e criteriosos, evitando desperdícios e corrupção. 
+
+```{r echo=FALSE, fig.align='center',fig.height=6, fig.width=10, message=FALSE, warning=FALSE}
+
+diarias_modificada |>
+  dplyr::mutate(
+    Valor_format = paste("R$", format(Valor, big.mark = ".", decimal.mark = ","))
+  ) |>
+  ggplot2::ggplot() +
+  ggplot2::aes(x = Diarias, y = Valor) +
+  ggplot2::geom_point() +
+  gghighlight::gghighlight(
+    Valor > 35000 & Diarias < 100,
+    label_key = Valor_format
+  ) +
+  ggplot2::labs(
+    title = "Há alguma incoerência nos valores pagos?",
+    subtitle = "Alguns valores recebidos são extremamente altos quando se compara com a quantidade de diárias feitas para gerar esse valor. \nPodemos ver que alguns dos valores mais altos foram feitos a partir de menos de 100 diárias.",
+    x = "Diárias",
+    y = "Total Recebido (R$)"
+  ) +
+  ggplot2::theme_minimal() +
+  ggplot2::theme(
+    legend.position = "none",
+    legend.title = ggplot2::element_blank(),
+    axis.title.x = ggplot2::element_text(vjust = -1),
+    axis.title.y = ggplot2::element_text(vjust = 1.5)
+  ) +
+  ggplot2::scale_y_continuous(
+    limits = c(0, 120000),
+    breaks = seq(0, 120000, 30000),
+    labels = c("0", "30 mil", "60 mil", "90 mil", "120 mil")
+  )
+
+```
+
+Nesse último gráfico observamos que alguns valores recebidos pelos servidores possuem poucas diárias acumuladas, gerando um pouco de incoerência com o restante das observações. Como exemplo no ano de 2017 o governador Robinson Faria acumulou 92 diárias totalizando aproximadamente 115 mil reais em valores recebidos. Pode existir diversas especulações para isso acontecer, a mais provável é que o valor da diária tenha relação com o cargo ou função exercida ou tenha relação o salário bruto do servidor. Nesse ano em específico o valor por diária recebida foi de R$ 1.250,00.
 
 # Documentação da base final
 
